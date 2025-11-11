@@ -1,0 +1,59 @@
+# Node modules
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+logs/*.log
+debug.log
+error.log
+
+# Build outputs
+dist/
+build/
+out/
+coverage/
+.next/
+.vite/
+.cache/
+
+# Uploads & temp files
+uploads/
+temp/
+tmp/
+*.tmp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo
+
+# PM2 logs or runtime files
+pids/
+*.pid
+*.seed
+
+# Custom app stuff (optional)
+session/
+data/
+json_cache/
+# WhatsApp session files
+session/
+auth/
