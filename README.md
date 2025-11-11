@@ -20,7 +20,7 @@ WA Gateway ini adalah API sederhana berbasis **Node.js + Express** yang mengguna
 
 ### 1. Clone repo
 ```bash
-git clone https://github.com/yourusername/wa-gateway.git
+git clone https://github.com/gilangdhan55/wagateway.git
 cd wa-gateway
 ```
 
