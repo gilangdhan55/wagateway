@@ -79,7 +79,7 @@ const startSock = async () => {
     try {
       const msg = m.messages[0];
       if (!msg.message) return;
-      console.log("📩 Pesan dari:", msg.key.remoteJid);
+      // console.log("📩 Pesan dari:", msg.key.remoteJid);
     } catch (err) {
       console.warn("⚠️ Gagal decrypt pesan:", err.message);
     }
