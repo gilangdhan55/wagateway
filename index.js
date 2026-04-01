@@ -503,6 +503,41 @@ app.post("/send-group-message", async (req, res) => {
 });
 
 // =======================
+// GET LIST GROUPS
+// =======================
+app.get("/groups", async (req, res) => {
+  if (!WA_READY) {
+    return res.status(503).json({
+      success: false,
+      message: "WhatsApp belum ready",
+    });
+  }
+
+  try {
+    const groups = await sock.groupFetchAllParticipating();
+
+    const result = Object.values(groups).map((g) => ({
+      id: g.id,
+      subject: g.subject,
+      owner: g.owner,
+      creation: g.creation,
+      participants_count: g.participants?.length || 0,
+    }));
+
+    res.json({
+      success: true,
+      count: result.length,
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+// =======================
 // upgrade http server to handle websocket connections on same port
 server.on("upgrade", (request, socket, head) => {
   // You can implement auth here if needed
