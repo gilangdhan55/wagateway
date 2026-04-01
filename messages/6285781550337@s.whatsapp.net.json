@@ -1,0 +1,170 @@
+[
+  {
+    "id": "3EB060EF3228E7B9A4F11B",
+    "remote": "6285781550337@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "extendedTextMessage",
+    "text": "Budget ANP - On Top\nSemua Brand A - Z\nBudget Di Set\nBudget Sisa\nBudget Version Two\nProfitablity\n\n- anp.pkserve.com\nFitur Filter PIC By Brand Manager\nApproved =\nFitur Upload Invoice \nFitur Upload Faktur Pajak\nFitur Upload PPH\nFitur Upload PO\nFitur Upload PR Erasoft Auto\nFitur Upload GR / Prove\nFitur Upload Approve Principal\nFitur Upload Debit Note\nProposal Approved\n\nUpdate Auto Refresh\n--- next ------\n\nForm Sample\n- PK Visit\nCall Plan 5 : \nNotif Time Stamp\nCheck In Location\nProblem di Toko\nActivity \n\nFS Visit\nFoto dengan Customer\nGuide Book \nREason\n\nDibuat Oleh \nDisetujui Oleh",
+    "timestamp": 1774850936,
+    "key": {
+      "remoteJid": "6285781550337@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB060EF3228E7B9A4F11B"
+    },
+    "message": {
+      "extendedTextMessage": {
+        "text": "Budget ANP - On Top\nSemua Brand A - Z\nBudget Di Set\nBudget Sisa\nBudget Version Two\nProfitablity\n\n- anp.pkserve.com\nFitur Filter PIC By Brand Manager\nApproved =\nFitur Upload Invoice \nFitur Upload Faktur Pajak\nFitur Upload PPH\nFitur Upload PO\nFitur Upload PR Erasoft Auto\nFitur Upload GR / Prove\nFitur Upload Approve Principal\nFitur Upload Debit Note\nProposal Approved\n\nUpdate Auto Refresh\n--- next ------\n\nForm Sample\n- PK Visit\nCall Plan 5 : \nNotif Time Stamp\nCheck In Location\nProblem di Toko\nActivity \n\nFS Visit\nFoto dengan Customer\nGuide Book \nREason\n\nDibuat Oleh \nDisetujui Oleh",
+        "contextInfo": {
+          "ephemeralSettingTimestamp": "1772528857",
+          "disappearingMode": {
+            "initiator": "CHANGED_IN_CHAT",
+            "trigger": "CHAT_SETTING",
+            "initiatedByMe": false
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT"
+      }
+    }
+  },
+  {
+    "id": "3EB0733FC88B1A74C4DD89",
+    "remote": "6285781550337@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "extendedTextMessage",
+    "text": "{\n    \"status\": \"success\",\n    \"message\": \"Audio berhasil dianalisis.\",\n    \"files\": [\n        \"recording_1774870276482_1774870281017.webm\"\n    ],\n    \"transcript\": [\n        {\n            \"file\": \"recording_1774870276482_1774870281017.webm\",\n            \"data\": {\n                \"transkrip\": \"Halo, kita ini lagi ada masalah. Kita punya budget buat ke Ropang Sebak itu Rp50.000. Gimana caranya Rp50.000 itu bisa dipakai jajan berdua? Kita harus pesan apa?\",\n                \"kesimpulan\": \"Audio ini membahas tantangan untuk makan berdua di Ropang Sebak dengan anggaran terbatas Rp50.000, mencari rekomendasi menu yang sesuai.\",\n                \"masalah\": [\n                    \"Anggaran terbatas untuk makan berdua (Rp50.000).\",\n                    \"Kesulitan menentukan menu yang pas dengan budget tersebut.\"\n                ],\n                \"solusi\": [\n                    \"Memilih menu yang paling hemat atau paket promo.\",\n                    \"Membagi porsi makanan agar cukup untuk berdua.\",\n                    \"Mencari menu yang mengenyangkan dengan harga terjangkau.\",\n                    \"Mempertimbangkan untuk hanya memesan satu hidangan utama dan satu minuman untuk dibagi.\"\n                ],\n                \"topik\": [\n                    \"Anggaran makanan\",\n                    \"Rekomendasi menu\",\n                    \"Makan hemat\",\n                    \"Ropang Sebak\"\n                ],\n                \"pembobotan\": {\n                    \"masalah\": 90,\n                    \"solusi\": 80,\n                    \"diskusi\": 30\n                },\n                \"urgensi\": \"medium\"\n            }\n        }\n    ]\n}",
+    "timestamp": 1774870391,
+    "key": {
+      "remoteJid": "6285781550337@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB0733FC88B1A74C4DD89"
+    },
+    "message": {
+      "extendedTextMessage": {
+        "text": "{\n    \"status\": \"success\",\n    \"message\": \"Audio berhasil dianalisis.\",\n    \"files\": [\n        \"recording_1774870276482_1774870281017.webm\"\n    ],\n    \"transcript\": [\n        {\n            \"file\": \"recording_1774870276482_1774870281017.webm\",\n            \"data\": {\n                \"transkrip\": \"Halo, kita ini lagi ada masalah. Kita punya budget buat ke Ropang Sebak itu Rp50.000. Gimana caranya Rp50.000 itu bisa dipakai jajan berdua? Kita harus pesan apa?\",\n                \"kesimpulan\": \"Audio ini membahas tantangan untuk makan berdua di Ropang Sebak dengan anggaran terbatas Rp50.000, mencari rekomendasi menu yang sesuai.\",\n                \"masalah\": [\n                    \"Anggaran terbatas untuk makan berdua (Rp50.000).\",\n                    \"Kesulitan menentukan menu yang pas dengan budget tersebut.\"\n                ],\n                \"solusi\": [\n                    \"Memilih menu yang paling hemat atau paket promo.\",\n                    \"Membagi porsi makanan agar cukup untuk berdua.\",\n                    \"Mencari menu yang mengenyangkan dengan harga terjangkau.\",\n                    \"Mempertimbangkan untuk hanya memesan satu hidangan utama dan satu minuman untuk dibagi.\"\n                ],\n                \"topik\": [\n                    \"Anggaran makanan\",\n                    \"Rekomendasi menu\",\n                    \"Makan hemat\",\n                    \"Ropang Sebak\"\n                ],\n                \"pembobotan\": {\n                    \"masalah\": 90,\n                    \"solusi\": 80,\n                    \"diskusi\": 30\n                },\n                \"urgensi\": \"medium\"\n            }\n        }\n    ]\n}",
+        "contextInfo": {
+          "ephemeralSettingTimestamp": "1772528857",
+          "disappearingMode": {
+            "initiator": "CHANGED_IN_CHAT",
+            "trigger": "CHAT_SETTING",
+            "initiatedByMe": false
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT"
+      }
+    }
+  },
+  {
+    "id": "3EB0A2ECBE43222E37D162",
+    "remote": "6285781550337@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "extendedTextMessage",
+    "text": "{\n    \"durasi\": \"01:26:06\",\n    \"phone\": \"\",\n    \"remark\": \"Transkrip:\\n    Kalau kita seandainya punya duit Rp500.000, kita pengin jalan-jalan ke Puncak nih berdua naik motor. Budgeting yang paling masuk akal kayak gimana ya? Kita penginnya sih kalau bisa nginep ya.\\n\\n    Kesimpulan:\\n    Pengguna mencari saran budgeting untuk perjalanan ke Puncak berdua naik motor dengan anggaran Rp500.000, termasuk keinginan untuk menginap.\\n\\n    Masalah:\\n    - Keterbatasan anggaran untuk perjalanan dan penginapan (Rp500.000 untuk berdua).\\n- Mencari cara budgeting yang paling masuk akal untuk perjalanan ke Puncak.\\n- Keinginan untuk menginap dengan anggaran terbatas.\\n\\n    Solusi:\\n    - Membuat rencana anggaran yang efisien untuk transportasi, makanan, dan akomodasi.\\n- Mencari opsi penginapan yang terjangkau di area Puncak.\\n- Menentukan prioritas pengeluaran agar sesuai dengan anggaran.\\n\\n    Topik:\\n    Perjalanan, Anggaran, Puncak, Motor, Penginapan\\n\\n    Urgensi: medium\\n    ------------------------------------\",\n    \"result_json\": \"[{\\\"transkrip\\\":\\\"Kalau kita seandainya punya duit Rp500.000, kita pengin jalan-jalan ke Puncak nih berdua naik motor. Budgeting yang paling masuk akal kayak gimana ya? Kita penginnya sih kalau bisa nginep ya.\\\",\\\"kesimpulan\\\":\\\"Pengguna mencari saran budgeting untuk perjalanan ke Puncak berdua naik motor dengan anggaran Rp500.000, termasuk keinginan untuk menginap.\\\",\\\"masalah\\\":[\\\"Keterbatasan anggaran untuk perjalanan dan penginapan (Rp500.000 untuk berdua).\\\",\\\"Mencari cara budgeting yang paling masuk akal untuk perjalanan ke Puncak.\\\",\\\"Keinginan untuk menginap dengan anggaran terbatas.\\\"],\\\"solusi\\\":[\\\"Membuat rencana anggaran yang efisien untuk transportasi, makanan, dan akomodasi.\\\",\\\"Mencari opsi penginapan yang terjangkau di area Puncak.\\\",\\\"Menentukan prioritas pengeluaran agar sesuai dengan anggaran.\\\"],\\\"topik\\\":[\\\"Perjalanan\\\",\\\"Anggaran\\\",\\\"Puncak\\\",\\\"Motor\\\",\\\"Penginapan\\\"],\\\"pembobotan\\\":{\\\"masalah\\\":85,\\\"solusi\\\":90,\\\"diskusi\\\":65},\\\"urgensi\\\":\\\"medium\\\"}]\",\n    \"data\": [\n        {\n            \"brand\": \"Sant\",\n            \"harga\": \"10000\",\n            \"pemakaian\": \"300\"\n        }\n    ],\n    \"id\": \"224\",\n    \"cardname\": \"ACCOLADE GROUP INDONESIA PT\",\n    \"cust_code\": \"FS01AGI01\",\n    \"cust_name\": \"ACCOLADE GROUP INDONESIA PT\",\n    \"address\": \"Street Gallery Pondok Indah Mall No.101A & Teras, Jl. Metro Pondok Indah No.Kav. Iv, Rt001 Rw016\",\n    \"city\": \"Jakarta Selatan\",\n    \"province\": \"Jakarta\",\n    \"full_name\": \"Jauhari Malik\",\n    \"job_position\": \"IT PROGRAMMER\",\n    \"minggu\": \"3\",\n    \"hari\": \"4\",\n    \"foto\": \"null\",\n    \"start_kunjungan\": \"2026-03-30T17:23:46.017Z\",\n    \"usercode\": \"20013\"\n}",
+    "timestamp": 1774871431,
+    "key": {
+      "remoteJid": "6285781550337@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB0A2ECBE43222E37D162"
+    },
+    "message": {
+      "extendedTextMessage": {
+        "text": "{\n    \"durasi\": \"01:26:06\",\n    \"phone\": \"\",\n    \"remark\": \"Transkrip:\\n    Kalau kita seandainya punya duit Rp500.000, kita pengin jalan-jalan ke Puncak nih berdua naik motor. Budgeting yang paling masuk akal kayak gimana ya? Kita penginnya sih kalau bisa nginep ya.\\n\\n    Kesimpulan:\\n    Pengguna mencari saran budgeting untuk perjalanan ke Puncak berdua naik motor dengan anggaran Rp500.000, termasuk keinginan untuk menginap.\\n\\n    Masalah:\\n    - Keterbatasan anggaran untuk perjalanan dan penginapan (Rp500.000 untuk berdua).\\n- Mencari cara budgeting yang paling masuk akal untuk perjalanan ke Puncak.\\n- Keinginan untuk menginap dengan anggaran terbatas.\\n\\n    Solusi:\\n    - Membuat rencana anggaran yang efisien untuk transportasi, makanan, dan akomodasi.\\n- Mencari opsi penginapan yang terjangkau di area Puncak.\\n- Menentukan prioritas pengeluaran agar sesuai dengan anggaran.\\n\\n    Topik:\\n    Perjalanan, Anggaran, Puncak, Motor, Penginapan\\n\\n    Urgensi: medium\\n    ------------------------------------\",\n    \"result_json\": \"[{\\\"transkrip\\\":\\\"Kalau kita seandainya punya duit Rp500.000, kita pengin jalan-jalan ke Puncak nih berdua naik motor. Budgeting yang paling masuk akal kayak gimana ya? Kita penginnya sih kalau bisa nginep ya.\\\",\\\"kesimpulan\\\":\\\"Pengguna mencari saran budgeting untuk perjalanan ke Puncak berdua naik motor dengan anggaran Rp500.000, termasuk keinginan untuk menginap.\\\",\\\"masalah\\\":[\\\"Keterbatasan anggaran untuk perjalanan dan penginapan (Rp500.000 untuk berdua).\\\",\\\"Mencari cara budgeting yang paling masuk akal untuk perjalanan ke Puncak.\\\",\\\"Keinginan untuk menginap dengan anggaran terbatas.\\\"],\\\"solusi\\\":[\\\"Membuat rencana anggaran yang efisien untuk transportasi, makanan, dan akomodasi.\\\",\\\"Mencari opsi penginapan yang terjangkau di area Puncak.\\\",\\\"Menentukan prioritas pengeluaran agar sesuai dengan anggaran.\\\"],\\\"topik\\\":[\\\"Perjalanan\\\",\\\"Anggaran\\\",\\\"Puncak\\\",\\\"Motor\\\",\\\"Penginapan\\\"],\\\"pembobotan\\\":{\\\"masalah\\\":85,\\\"solusi\\\":90,\\\"diskusi\\\":65},\\\"urgensi\\\":\\\"medium\\\"}]\",\n    \"data\": [\n        {\n            \"brand\": \"Sant\",\n            \"harga\": \"10000\",\n            \"pemakaian\": \"300\"\n        }\n    ],\n    \"id\": \"224\",\n    \"cardname\": \"ACCOLADE GROUP INDONESIA PT\",\n    \"cust_code\": \"FS01AGI01\",\n    \"cust_name\": \"ACCOLADE GROUP INDONESIA PT\",\n    \"address\": \"Street Gallery Pondok Indah Mall No.101A & Teras, Jl. Metro Pondok Indah No.Kav. Iv, Rt001 Rw016\",\n    \"city\": \"Jakarta Selatan\",\n    \"province\": \"Jakarta\",\n    \"full_name\": \"Jauhari Malik\",\n    \"job_position\": \"IT PROGRAMMER\",\n    \"minggu\": \"3\",\n    \"hari\": \"4\",\n    \"foto\": \"null\",\n    \"start_kunjungan\": \"2026-03-30T17:23:46.017Z\",\n    \"usercode\": \"20013\"\n}",
+        "contextInfo": {
+          "ephemeralSettingTimestamp": "1772528857",
+          "disappearingMode": {
+            "initiator": "CHANGED_IN_CHAT",
+            "trigger": "CHAT_SETTING",
+            "initiatedByMe": false
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT"
+      }
+    }
+  },
+  {
+    "id": "3EB0DB42C5113DF1C7012F",
+    "remote": "6285781550337@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "extendedTextMessage",
+    "text": "{\n    \"success\": false,\n    \"message\": \"Terjadi kesalahan saat menyimpan data.\",\n    \"error\": \"String or binary data would be truncated in table 'PK_ANP_DEV_QUERY.dbo.fs_jadwal', column 'result'. Truncated value: 'Transkrip:\\n    Kalau kita seandainya punya duit Rp500.000, kita pengin jalan-jalan ke Puncak nih ber'.\"\n}",
+    "timestamp": 1774871570,
+    "key": {
+      "remoteJid": "6285781550337@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB0DB42C5113DF1C7012F"
+    },
+    "message": {
+      "extendedTextMessage": {
+        "text": "{\n    \"success\": false,\n    \"message\": \"Terjadi kesalahan saat menyimpan data.\",\n    \"error\": \"String or binary data would be truncated in table 'PK_ANP_DEV_QUERY.dbo.fs_jadwal', column 'result'. Truncated value: 'Transkrip:\\n    Kalau kita seandainya punya duit Rp500.000, kita pengin jalan-jalan ke Puncak nih ber'.\"\n}",
+        "contextInfo": {
+          "ephemeralSettingTimestamp": "1772528857",
+          "disappearingMode": {
+            "initiator": "CHANGED_IN_CHAT",
+            "trigger": "CHAT_SETTING",
+            "initiatedByMe": false
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT"
+      }
+    }
+  },
+  {
+    "id": "3EB08C22705A4C474A7651",
+    "remote": "6285781550337@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "extendedTextMessage",
+    "text": "Transkrip:\n    \n\n    Kesimpulan:\n    Tidak ada audio yang terdeteksi atau audio yang diberikan kosong, sehingga tidak ada konten untuk dianalisis.\n\n    Masalah:\n    \n\n    Solusi:\n    \n\n    Topik:\n    audio kosong, tidak ada konten\n\n    Urgensi: low\n    ------------------------------------",
+    "timestamp": 1774872487,
+    "key": {
+      "remoteJid": "6285781550337@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB08C22705A4C474A7651"
+    },
+    "message": {
+      "extendedTextMessage": {
+        "text": "Transkrip:\n    \n\n    Kesimpulan:\n    Tidak ada audio yang terdeteksi atau audio yang diberikan kosong, sehingga tidak ada konten untuk dianalisis.\n\n    Masalah:\n    \n\n    Solusi:\n    \n\n    Topik:\n    audio kosong, tidak ada konten\n\n    Urgensi: low\n    ------------------------------------",
+        "contextInfo": {
+          "ephemeralSettingTimestamp": "1772528857",
+          "disappearingMode": {
+            "initiator": "CHANGED_IN_CHAT",
+            "trigger": "CHAT_SETTING",
+            "initiatedByMe": false
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT"
+      }
+    }
+  },
+  {
+    "id": "3EB02CC44193E66E0B691F",
+    "remote": "6285781550337@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "extendedTextMessage",
+    "text": "{\n    \"status\": \"success\",\n    \"message\": \"Audio berhasil dianalisis.\",\n    \"files\": [\n        \"recording_1774872458704_1774872462770.webm\"\n    ],\n    \"transcript\": [\n        {\n            \"file\": \"recording_1774872458704_1774872462770.webm\",\n            \"data\": {\n                \"transkrip\": \"\",\n                \"kesimpulan\": \"Tidak ada audio yang terdeteksi atau audio yang diberikan kosong, sehingga tidak ada konten untuk dianalisis.\",\n                \"masalah\": [],\n                \"solusi\": [],\n                \"topik\": [\n                    \"audio kosong\",\n                    \"tidak ada konten\"\n                ],\n                \"pembobotan\": {\n                    \"masalah\": 0,\n                    \"solusi\": 0,\n                    \"diskusi\": 0\n                },\n                \"urgensi\": \"low\"\n            }\n        }\n    ]\n}",
+    "timestamp": 1774872535,
+    "key": {
+      "remoteJid": "6285781550337@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB02CC44193E66E0B691F"
+    },
+    "message": {
+      "extendedTextMessage": {
+        "text": "{\n    \"status\": \"success\",\n    \"message\": \"Audio berhasil dianalisis.\",\n    \"files\": [\n        \"recording_1774872458704_1774872462770.webm\"\n    ],\n    \"transcript\": [\n        {\n            \"file\": \"recording_1774872458704_1774872462770.webm\",\n            \"data\": {\n                \"transkrip\": \"\",\n                \"kesimpulan\": \"Tidak ada audio yang terdeteksi atau audio yang diberikan kosong, sehingga tidak ada konten untuk dianalisis.\",\n                \"masalah\": [],\n                \"solusi\": [],\n                \"topik\": [\n                    \"audio kosong\",\n                    \"tidak ada konten\"\n                ],\n                \"pembobotan\": {\n                    \"masalah\": 0,\n                    \"solusi\": 0,\n                    \"diskusi\": 0\n                },\n                \"urgensi\": \"low\"\n            }\n        }\n    ]\n}",
+        "contextInfo": {
+          "ephemeralSettingTimestamp": "1772528857",
+          "disappearingMode": {
+            "initiator": "CHANGED_IN_CHAT",
+            "trigger": "CHAT_SETTING",
+            "initiatedByMe": false
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT"
+      }
+    }
+  }
+]

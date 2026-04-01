@@ -1,0 +1,80 @@
+[
+  {
+    "id": "3EB05B0C8C4BE43D76A370",
+    "remote": "628561018889-1531895483@g.us",
+    "fromMe": false,
+    "pushName": "Pandurasa Bot",
+    "type": "protocolMessage",
+    "text": "",
+    "timestamp": 1774956355,
+    "key": {
+      "remoteJid": "628561018889-1531895483@g.us",
+      "fromMe": false,
+      "id": "3EB05B0C8C4BE43D76A370",
+      "participant": "218498492018730@lid"
+    },
+    "message": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "628561018889-1531895483@g.us",
+          "fromMe": true,
+          "id": "3EB03136A52E4C8AD8E0F4",
+          "participant": "218498492018730@lid"
+        },
+        "type": "REVOKE"
+      }
+    }
+  },
+  {
+    "id": "3EB05B0C8C4BE43D76A370",
+    "remote": "628561018889-1531895483@g.us",
+    "fromMe": false,
+    "pushName": "Pandurasa Bot",
+    "type": "protocolMessage",
+    "text": "",
+    "timestamp": 1774956357,
+    "key": {
+      "remoteJid": "628561018889-1531895483@g.us",
+      "fromMe": false,
+      "id": "3EB05B0C8C4BE43D76A370",
+      "participant": "218498492018730@lid"
+    },
+    "message": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "628561018889-1531895483@g.us",
+          "fromMe": true,
+          "id": "3EB03136A52E4C8AD8E0F4",
+          "participant": "218498492018730@lid"
+        },
+        "type": "REVOKE"
+      }
+    }
+  },
+  {
+    "id": "3ADD1B93DCD6DE4DD18D",
+    "remote": "628561018889-1531895483@g.us",
+    "fromMe": false,
+    "pushName": "Emma",
+    "type": "senderKeyDistributionMessage",
+    "text": "",
+    "timestamp": 1775006851,
+    "key": {
+      "remoteJid": "628561018889-1531895483@g.us",
+      "fromMe": false,
+      "id": "3ADD1B93DCD6DE4DD18D",
+      "participant": "170561925836919@lid",
+      "participantPn": "6285890494888@s.whatsapp.net"
+    },
+    "message": {
+      "conversation": "Pagi\nMau nanya ya status belum di isi itu apa ya? Belum pick up atau ??",
+      "senderKeyDistributionMessage": {
+        "groupId": "628561018889-1531895483@g.us",
+        "axolotlSenderKeyDistributionMessage": "Mwi0lqDXBRAAGiDS+rwIoyC/Zk9jycXbMnibZxNRytjvBgz4tpI9R9OioiIhBSbtQmT/xaSjy0g1aA3F7OKFdSQODy64SjLFA9f1Rf4y"
+      },
+      "messageContextInfo": {
+        "messageSecret": "P1xVLsRenRq1PNyTRXCaWygb4M+eh0+9PgWy0myewXk="
+      }
+    }
+  }
+]

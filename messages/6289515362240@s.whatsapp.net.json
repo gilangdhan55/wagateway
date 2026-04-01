@@ -1,0 +1,199 @@
+[
+  {
+    "id": "3EB09318AF372305CA516C",
+    "remote": "6289515362240@s.whatsapp.net",
+    "fromMe": false,
+    "pushName": "gie",
+    "type": "conversation",
+    "text": "test",
+    "timestamp": 1774361922,
+    "key": {
+      "remoteJid": "6289515362240@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB09318AF372305CA516C",
+      "senderLid": "247815620038719@lid"
+    },
+    "message": {
+      "conversation": "test",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "IrNpDxD8Nfsqpw==",
+          "senderTimestamp": "1774273166",
+          "senderAccountType": "E2EE",
+          "receiverAccountType": "E2EE",
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "1MlGG9np2tfk48UVQp45bMu6PW1GFT8bJO+wdyGjSFs=",
+        "limitSharingV2": {
+          "sharingLimited": false,
+          "trigger": "UNKNOWN",
+          "limitSharingSettingTimestamp": "0",
+          "initiatedByMe": false
+        }
+      }
+    }
+  },
+  {
+    "id": "3EB0DDECBB41EC5C4656B6",
+    "remote": "6289515362240@s.whatsapp.net",
+    "fromMe": false,
+    "pushName": "gie",
+    "type": "conversation",
+    "text": "halo gays",
+    "timestamp": 1774361946,
+    "key": {
+      "remoteJid": "6289515362240@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB0DDECBB41EC5C4656B6",
+      "senderLid": "247815620038719@lid"
+    },
+    "message": {
+      "conversation": "halo gays",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "IrNpDxD8Nfsqpw==",
+          "senderTimestamp": "1774273166",
+          "senderAccountType": "E2EE",
+          "receiverAccountType": "E2EE",
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "QIJdbi13cJUMl02xuJceMMXCN5bxwXoOpLYi5KTV4YY=",
+        "limitSharingV2": {
+          "sharingLimited": false,
+          "trigger": "UNKNOWN",
+          "limitSharingSettingTimestamp": "0",
+          "initiatedByMe": false
+        }
+      }
+    }
+  },
+  {
+    "id": "3EB0B86724A29D4317C0E6",
+    "remote": "6289515362240@s.whatsapp.net",
+    "fromMe": false,
+    "pushName": "gie",
+    "type": "conversation",
+    "text": "hay",
+    "timestamp": 1774362408,
+    "key": {
+      "remoteJid": "6289515362240@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB0B86724A29D4317C0E6",
+      "senderLid": "247815620038719@lid"
+    },
+    "message": {
+      "conversation": "hay",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "IrNpDxD8Nfsqpw==",
+          "senderTimestamp": "1774273166",
+          "senderAccountType": "E2EE",
+          "receiverAccountType": "E2EE",
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "vQgPOC74NUvcqjcOFuCdHX/JODSeQMHVJ9JOOpn919A=",
+        "limitSharingV2": {
+          "sharingLimited": false,
+          "trigger": "UNKNOWN",
+          "limitSharingSettingTimestamp": "0",
+          "initiatedByMe": false
+        }
+      }
+    }
+  },
+  {
+    "id": "3EB033268296FB5DD904D8",
+    "remote": "6289515362240@s.whatsapp.net",
+    "fromMe": false,
+    "pushName": "gie",
+    "type": "conversation",
+    "text": "test",
+    "timestamp": 1774362427,
+    "key": {
+      "remoteJid": "6289515362240@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB033268296FB5DD904D8",
+      "senderLid": "247815620038719@lid"
+    },
+    "message": {
+      "conversation": "test",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "IrNpDxD8Nfsqpw==",
+          "senderTimestamp": "1774273166",
+          "senderAccountType": "E2EE",
+          "receiverAccountType": "E2EE",
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "WwJgnKPJbufOas2ZFkdA/BUg8k2W1aXVKSHnLq4qo88=",
+        "limitSharingV2": {
+          "sharingLimited": false,
+          "trigger": "UNKNOWN",
+          "limitSharingSettingTimestamp": "0",
+          "initiatedByMe": false
+        }
+      }
+    }
+  },
+  {
+    "id": "3EB008ED06DD9847DD026D",
+    "remote": "6289515362240@s.whatsapp.net",
+    "fromMe": false,
+    "pushName": "gie",
+    "type": "conversation",
+    "text": "ikan lele makan lele",
+    "timestamp": 1774362466,
+    "key": {
+      "remoteJid": "6289515362240@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB008ED06DD9847DD026D",
+      "senderLid": "247815620038719@lid"
+    },
+    "message": {
+      "conversation": "ikan lele makan lele",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "IrNpDxD8Nfsqpw==",
+          "senderTimestamp": "1774273166",
+          "senderAccountType": "E2EE",
+          "receiverAccountType": "E2EE",
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "fvvqj6kCm3rNyVBXQ21oMJ3pYFWvi6GFgn0UPPKYwbg=",
+        "limitSharingV2": {
+          "sharingLimited": false,
+          "trigger": "UNKNOWN",
+          "limitSharingSettingTimestamp": "0",
+          "initiatedByMe": false
+        }
+      }
+    }
+  },
+  {
+    "id": "3EB0FC08AE4A19C48C3BB2",
+    "remote": "6289515362240@s.whatsapp.net",
+    "fromMe": true,
+    "pushName": "Pandurasa Bot",
+    "type": "conversation",
+    "text": "kenapa lagn??",
+    "timestamp": 1774363651,
+    "key": {
+      "remoteJid": "6289515362240@s.whatsapp.net",
+      "fromMe": true,
+      "id": "3EB0FC08AE4A19C48C3BB2"
+    },
+    "message": {
+      "conversation": "kenapa lagn??"
+    }
+  }
+]

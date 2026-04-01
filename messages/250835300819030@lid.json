@@ -1,0 +1,54 @@
+[
+  {
+    "id": "AC7609363C58E1F4436C0C2FA0C7B9D1",
+    "remote": "250835300819030@lid",
+    "fromMe": false,
+    "pushName": "Jauhari Malik",
+    "type": "conversation",
+    "text": "Dmna",
+    "timestamp": 1774694990,
+    "key": {
+      "remoteJid": "250835300819030@lid",
+      "fromMe": false,
+      "id": "AC7609363C58E1F4436C0C2FA0C7B9D1",
+      "senderPn": "6288806307360@s.whatsapp.net"
+    },
+    "message": {
+      "conversation": "Dmna",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "9sVX/X2Dg8R10prTInT+PW30DZpaJ7JXRaGr2PTNSG4="
+      }
+    }
+  },
+  {
+    "id": "AC4CAA1CFA306730B5BFC42CFFA02B3B",
+    "remote": "250835300819030@lid",
+    "fromMe": false,
+    "pushName": "Jauhari Malik",
+    "type": "conversation",
+    "text": "Plg jgn MLM\"",
+    "timestamp": 1774885425,
+    "key": {
+      "remoteJid": "250835300819030@lid",
+      "fromMe": false,
+      "id": "AC4CAA1CFA306730B5BFC42CFFA02B3B",
+      "senderPn": "6288806307360@s.whatsapp.net"
+    },
+    "message": {
+      "conversation": "Plg jgn MLM\"",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "ahkgXhK/BKBqxPp7Fo6EL0gE6DgsqBtZInXtk1if0tg="
+      }
+    }
+  }
+]

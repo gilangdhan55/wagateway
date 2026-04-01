@@ -1,0 +1,28 @@
+[
+  {
+    "id": "AC5A3825DEDD0D1E0CE02B58C0D96E0F",
+    "remote": "118232027549770@lid",
+    "fromMe": false,
+    "pushName": "F",
+    "type": "conversation",
+    "text": "P",
+    "timestamp": 1774981621,
+    "key": {
+      "remoteJid": "118232027549770@lid",
+      "fromMe": false,
+      "id": "AC5A3825DEDD0D1E0CE02B58C0D96E0F",
+      "senderPn": "6285819215462@s.whatsapp.net"
+    },
+    "message": {
+      "conversation": "P",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "tj9ba00fVblErljLEhlR/UJCryNb+azBnMtSWOuE5oU="
+      }
+    }
+  }
+]

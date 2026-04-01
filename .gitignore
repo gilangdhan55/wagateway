@@ -57,5 +57,4 @@ json_cache/
 # WhatsApp session files
 sessions/
 auth/
-
-messages/
+ 

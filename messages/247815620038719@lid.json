@@ -1,0 +1,29 @@
+[
+  {
+    "id": "3AE45948EAAC8C36E54F",
+    "remote": "247815620038719@lid",
+    "fromMe": false,
+    "pushName": "gie",
+    "type": "conversation",
+    "text": "Tadi cuman test",
+    "timestamp": 1774365748,
+    "key": {
+      "remoteJid": "247815620038719@lid",
+      "fromMe": false,
+      "id": "3AE45948EAAC8C36E54F",
+      "senderPn": "6289515362240@s.whatsapp.net"
+    },
+    "message": {
+      "conversation": "Tadi cuman test",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderTimestamp": "1774363112",
+          "recipientKeyHash": "JHH7tlfrhnCCAw==",
+          "recipientTimestamp": "1773054784"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "fu1lZP9sMKFvhFjc+7+rHqpw6PU6zxVbcejEHOEWzEU="
+      }
+    }
+  }
+]
