@@ -14,6 +14,7 @@ import fileUpload from "express-fileupload";
 import Queue from "p-queue";
 import axios from "axios";
 import crypto from "crypto";
+import { downloadContentFromMessage } from "@whiskeysockets/baileys";
 
 const app = express();
 
@@ -313,6 +314,7 @@ const decryptMediaFile = (encBuffer, mediaKey, type = "image") => {
     const cipherKey = expandedKey.slice(16, 48);
 
     const decipher = crypto.createDecipheriv("aes-256-cbc", cipherKey, iv);
+    decipher.setAutoPadding(true); // enable automatic padding removal
 
     const decrypted = Buffer.concat([
       decipher.update(encBuffer),
@@ -642,225 +644,237 @@ const startSock = async () => {
   // listen for incoming messages and broadcast to websocket clients
   sock.ev.on("messages.upsert", async (m) => {
     try {
-      console.log('messages.upsert event', { type: m.type, total: m.messages?.length || 0 });
       if (m.type !== "notify") return;
+
       const msgs = m.messages?.filter((msg) => !!msg.message) || [];
-      console.log('messages.upsert filtered count', msgs.length);
+
       for (const msg of msgs) {
-        // skip message statuses
-        if (msg.key && msg.key.remoteJid === "status@broadcast") continue;
+        // Skip status messages
+        if (msg.key?.remoteJid === "status@broadcast") continue;
 
-        const parsed = (() => {
-          const key = msg.key || {};
-          const remote = key.remoteJid || null;
-          const fromMe = !!key.fromMe;
-          const id = key.id || null;
-          const pushName = msg.pushName || null;
-          const mtype = msg.message ? Object.keys(msg.message)[0] : null;
-          let text = "";
-          if (mtype === "conversation") text = msg.message.conversation;
-          else if (mtype === "extendedTextMessage") text = msg.message.extendedTextMessage?.text;
-          else if (mtype === "imageMessage") text = msg.message.imageMessage?.caption;
-          else if (mtype === "documentMessage") text = msg.message.documentMessage?.fileName || "";
-          return { id, remote, fromMe, pushName, type: mtype, text };
-        })();
-
-        // derive sender
+        const key = msg.key || {};
+        const id = key.id || msg.id || null;
+        const remote = key.remoteJid || msg.remote || null;
+        const fromMe = !!key.fromMe;
+        const pushName = msg.pushName || null;
+        const mtype = msg.message ? Object.keys(msg.message)[0] : null;
+        const timestamp = msg.messageTimestamp || key.timestamp || Date.now();
         const senderJid = msg.key?.participant || msg.key?.remoteJid || null;
         const senderNumber = senderJid ? String(senderJid).split("@")[0] : null;
-        const senderName = msg.pushName || parsed.pushName || null;
-        const isGroup = parsed.remote?.endsWith("@g.us");
 
-        // try fetch group metadata (non-blocking for broadcast)
+        // Extract text from different message types
+        let text = "";
+        if (mtype === "conversation") text = msg.message.conversation;
+        else if (mtype === "extendedTextMessage") text = msg.message.extendedTextMessage?.text || "";
+        else if (mtype === "imageMessage") text = msg.message.imageMessage?.caption || "";
+        else if (mtype === "documentMessage") text = msg.message.documentMessage?.fileName || "";
+
+        // Get group name if group message
         let groupName = null;
+        const isGroup = remote?.endsWith("@g.us");
         if (isGroup) {
           try {
-            const g = await sock.groupMetadata(parsed.remote).catch(() => null);
+            const g = await sock.groupMetadata(remote).catch(() => null);
             groupName = g?.subject || null;
           } catch (e) {
             groupName = null;
           }
         }
 
-        // immediate payload to WS: text + meta
-        const payload = {
-          id: parsed.id,
-          text: parsed.text,
-          chat: parsed.remote,
+        // Create message item for JSON storage
+        const item = {
+          id,
+          remote,
+          fromMe,
+          pushName,
+          type: mtype,
+          text,
+          timestamp,
           sender: senderNumber,
-          senderName,
-          isGroup,
-          groupName,
-          timestamp: msg.messageTimestamp || msg.key?.timestamp || Date.now(),
+          groupName: groupName || null,
+          key: key || null,
+          message: msg.message || null,
         };
 
-        console.log('Incoming message for', parsed.remote, 'id=', parsed.id, 'text=', parsed.text);
+        // Save message to JSON file
+        if (remote) {
+          saveMessageToFile(remote, item);
+          console.log(`✅ Message saved id=${id} to file for ${remote}`);
+        }
+
+        // Broadcast message to WebSocket clients (initial text + metadata)
+        const payload = {
+          id,
+          text,
+          chat: remote,
+          sender: senderNumber,
+          senderName: pushName,
+          isGroup,
+          groupName,
+          timestamp,
+          type: mtype,
+        };
         broadcast({ type: "whatsapp_message", payload });
-        console.log('Broadcasted message to', wsClients.size, 'WS clients');
+        console.log(`📤 Broadcasted message to ${wsClients.size} WS clients`);
 
-        // persist to local json file (include sender/group info and raw message)
-        try {
-          const ts = msg.messageTimestamp || msg.key?.timestamp || Date.now();
-          const item = {
-            id: parsed.id,
-            remote: parsed.remote,
-            fromMe: parsed.fromMe,
-            pushName: senderName,
-            type: parsed.type,
-            text: parsed.text,
-            timestamp: ts,
-            sender: senderNumber,
-            groupName: groupName || null,
-            key: msg.key || null,
-            message: msg.message || null,
-          };
-          const target = parsed.remote || msg.key?.remoteJid;
-          console.log(parsed)
-          if (target) {
-            saveMessageToFile(target, item);
-            console.log(`Saved message id=${item.id} to file for ${target}`);
-          }
-
-          // if message contains media, download asynchronously and update file & notify WS
-          const mtype = parsed.type;
-          if (["imageMessage", "videoMessage", "documentMessage", "audioMessage"].includes(mtype)) {
-            (async () => {
+        // Handle media if present
+        if (["imageMessage", "videoMessage", "documentMessage", "audioMessage"].includes(mtype)) {
+          (async () => {
+            try {
               await sleep(2000);
-              const msgForDownload = {
-                ...msg,
-                key: {
-                  ...msg.key,
-                  participant:
-                    msg.key?.participant ||
-                    msg.participant ||
-                    msg.key?.remoteJid
-                }
+              
+              const message = msg.message;
+              if (!message?.[mtype]) return;
+
+              let buffer = null;
+              const typeMap = {
+                imageMessage: "image",
+                videoMessage: "video",
+                audioMessage: "audio",
+                documentMessage: "document"
               };
 
-              let mediaInfo = await downloadMediaToFile(
-                msgForDownload,
-                target,
-                mtype,
-                parsed.id
-              );
-
-              if (!mediaInfo) {
-                console.log("⚠️ fallback ke raw download");
-
-                mediaInfo = await downloadMediaRaw(msg, target, mtype, parsed.id);
-                if (mediaInfo) {
-                    const content = msg.message?.[mtype];
-
-                    const typeMap = {
-                      imageMessage: "image",
-                      videoMessage: "video",
-                      audioMessage: "audio",
-                      documentMessage: "document"
-                    };
-
-                    const mediaType = typeMap[mtype] || "image";
-
-                    const encBuffer = fs.readFileSync(mediaInfo.path);
-
-                    const decrypted = decryptMediaFile(
-                      encBuffer,
-                      content.mediaKey,
-                      mediaType
-                    );
-
-                    if (decrypted) {
-                      const ext = getExtFromMime(content.mimetype);
-                      const finalPath = raw.path.replace(".enc", ext || ".bin");
-
-                      fs.writeFileSync(finalPath, decrypted);
-
-                      console.log("✅ DECRYPT SUCCESS:", finalPath);
-                    }
-                  }
+              try {
+                // Try to download using downloadContentFromMessage
+                const downloadContentFromMessage = (await import("@whiskeysockets/baileys")).downloadContentFromMessage;
+                const stream = await downloadContentFromMessage(message[mtype], mtype.replace("Message", ""));
+                
+                buffer = Buffer.from([]);
+                for await (const chunk of stream) {
+                  buffer = Buffer.concat([buffer, chunk]);
+                }
+                console.log("✅ Media downloaded successfully");
+              } catch (e) {
+                console.log("⚠️ Standard download failed:", e?.message);
+                buffer = null;
               }
-              if (mediaInfo) {
-                // update saved file: find message by id and attach media
+
+              if (!buffer) {
+                console.log("⚠️ Fallback: using raw download");
+                const content = message?.[mtype];
+                if (content?.directPath) {
+                  try {
+                    const url = `https://mmg.whatsapp.net${content.directPath}`;
+                    const res = await axios.get(url, {
+                      responseType: "arraybuffer",
+                      headers: {
+                        Origin: "https://web.whatsapp.com",
+                        Referer: "https://web.whatsapp.com/",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+                      }
+                    });
+                    
+                    if (content.mediaKey && res.data) {
+                      buffer = decryptMediaFile(res.data, content.mediaKey, typeMap[mtype] || "image");
+                      console.log("✅ Media decrypted from raw download");
+                    }
+                  } catch (e) {
+                    console.log("❌ Raw download failed:", e?.message);
+                  }
+                }
+              }
+
+              if (buffer) {
+                // Save media to file
+                const content = message?.[mtype];
+                const mimetype = content?.mimetype || "application/octet-stream";
+                const ext = getExtFromMime(mimetype, content?.fileName || null) || "";
+                const dir = ensureMediaDir(remote);
+                const filename = `${timestamp}_${id}${ext}`;
+                const filePath = path.join(dir, filename);
+
+                fs.writeFileSync(filePath, buffer);
+                console.log(`✅ Media saved: ${filePath}`);
+
+                // Update JSON with media info
                 try {
-                  const file = path.join(MESSAGES_DIR, jidToFilename(target));
+                  const file = path.join(MESSAGES_DIR, jidToFilename(remote));
                   if (fs.existsSync(file)) {
                     const arr = JSON.parse(fs.readFileSync(file, "utf8") || "[]");
                     for (let i = arr.length - 1; i >= 0; i--) {
-                      if (arr[i].id === parsed.id) {
-                        try {
-                          // if image, embed as base64 inside JSON
-                          if (mediaInfo.isImage) {
-                            const b = fs.readFileSync(mediaInfo.path);
-                            const base64 = b.toString('base64');
-                            arr[i].media = {
-                              type: 'image',
-                              mime: mediaInfo.mime || null,
-                              name: mediaInfo.name || null,
-                              base64: `data:${mediaInfo.mime || 'image'};base64,${base64}`,
-                            };
-                          } else {
-                            // other media types: do not embed, store metadata and path
-                            const mime = mediaInfo.mime || '';
-                            let mtype = 'document';
-                            if (mime.includes('video')) mtype = 'video';
-                            else if (mime.includes('audio')) mtype = 'audio';
-                            else if (mime.includes('image')) mtype = 'image';
-                            arr[i].media = {
-                              type: mtype,
-                              mime: mime || null,
-                              name: mediaInfo.name || null,
-                              path: mediaInfo.path || null,
-                            };
-                          }
-                        } catch (e) {
-                          console.error('failed to attach media to message', e?.message || e);
-                          // fallback: attach raw mediaInfo
-                          arr[i].media = mediaInfo;
+                      if (arr[i].id === id) {
+                        if (mtype === "imageMessage" && [".jpg", ".jpeg", ".png", ".gif"].some(ext => filename.endsWith(ext))) {
+                          // For images, embed as base64
+                          const base64 = buffer.toString('base64');
+                          arr[i].media = {
+                            type: 'image',
+                            mime: mimetype,
+                            name: filename,
+                            base64: `data:${mimetype};base64,${base64}`,
+                          };
+                          // Also broadcast with base64
+                          broadcast({ 
+                            type: 'media_saved', 
+                            payload: { 
+                              chat: remote, 
+                              id, 
+                              media: arr[i].media,
+                              sender: senderNumber
+                            } 
+                          });
+                        } else {
+                          // For other media, store metadata and path
+                          const mediaType = typeMap[mtype] || 'document';
+                          arr[i].media = {
+                            type: mediaType,
+                            mime: mimetype,
+                            name: filename,
+                            path: filePath,
+                          };
+                          broadcast({ 
+                            type: 'media_saved', 
+                            payload: { 
+                              chat: remote, 
+                              id, 
+                              media: arr[i].media,
+                              sender: senderNumber
+                            } 
+                          });
                         }
                         break;
                       }
                     }
                     fs.writeFileSync(file, JSON.stringify(arr, null, 2), "utf8");
-                    // notify ws clients that media saved (send the same shape we stored)
-                    // find the updated message to include in payload
-                    const updated = arr.find((x) => x.id === parsed.id) || null;
-                    broadcast({ type: 'media_saved', payload: { chat: target, id: parsed.id, media: updated ? updated.media : mediaInfo } });
                   }
                 } catch (e) {
-                  console.error('failed to update saved message with media', e);
+                  console.error("Failed to update JSON with media:", e?.message);
                 }
               } else {
-                // initial download failed: mark message in file as pending so background reprocessor will retry
+                console.log("⚠️ Media download completely failed, marking as pending");
+                // Mark as pending for retry
                 try {
-                  const file = path.join(MESSAGES_DIR, jidToFilename(target));
+                  const file = path.join(MESSAGES_DIR, jidToFilename(remote));
                   if (fs.existsSync(file)) {
-                    const arr = JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
+                    const arr = JSON.parse(fs.readFileSync(file, "utf8") || "[]");
                     for (let i = arr.length - 1; i >= 0; i--) {
-                      if (arr[i].id === parsed.id) {
-                        arr[i].media = arr[i].media || {};
-                        arr[i].media.pending = true;
-                        arr[i].media.attempts = (arr[i].media.attempts || 0);
-                        arr[i].media.lastAttempt = Date.now();
-                        arr[i].media.reason = 'initial_download_failed';
+                      if (arr[i].id === id) {
+                        arr[i].media = {
+                          pending: true,
+                          attempts: 0,
+                          lastAttempt: Date.now(),
+                          reason: "download_failed"
+                        };
                         break;
                       }
                     }
-                    fs.writeFileSync(file, JSON.stringify(arr, null, 2), 'utf8');
-                    broadcast({ type: 'media_pending', payload: { chat: target, id: parsed.id, attempts: arr.find(x => x.id === parsed.id)?.media?.attempts || 0 } });
+                    fs.writeFileSync(file, JSON.stringify(arr, null, 2), "utf8");
                   }
                 } catch (e) {
-                  console.error('failed to mark message pending after initial download fail', e?.message || e);
+                  console.error("Failed to mark media as pending:", e?.message);
                 }
               }
-            })();
-          }
-        } catch (e) {
-          console.error('failed to persist message', e);
+            } catch (e) {
+              console.error("Media handling error:", e?.message);
+            }
+          })();
         }
       }
-    } catch (e) {
-      console.error("Error broadcasting incoming message", e);
+    } catch (err) {
+      console.error("❌ messages.upsert ERROR:", err);
     }
   });
+
+
 };
 
 // =======================
