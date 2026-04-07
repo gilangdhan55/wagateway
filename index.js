@@ -24,6 +24,17 @@ const HOST = process.env.HOST || "0.0.0.0";
 // optional separate WS port (if set, WS will listen on this port instead of HTTP upgrade)
 const WS_PORT = process.env.WS_PORT ? Number(process.env.WS_PORT) : 4651;
 
+// helper to compute MEDIA_BASE_URL early and media url
+const getMediaBase = () => {
+  const PUBLIC_HOST = process.env.PUBLIC_HOST || (HOST === '0.0.0.0' ? process.env.MEDIA_PUBLIC_IP || '103.169.73.35' : HOST);
+  return process.env.MEDIA_BASE_URL || `http://${PUBLIC_HOST}:${PORT}`;
+};
+
+const getMediaUrl = (jid, filename) => {
+  const sjid = jidToFilename(jid).replace(/\.json$/, "");
+  return `${getMediaBase()}/media/${sjid}/${filename}`;
+};
+
 // create a http server so we can attach WebSocket server to same port
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
@@ -369,16 +380,16 @@ const reprocessPendingMediaOnce = async (specificJid = null) => {
         const mediaInfo = await downloadMediaToFile(retryMsg, fileName.replace(/\.json$/, '').replace(/_/g, '@'), mtype, item.id);
 
         if (mediaInfo) {
-          // attach media similarly to main flow
           try {
             if (mediaInfo.isImage) {
-              const b = fs.readFileSync(mediaInfo.path);
-              const base64 = b.toString('base64');
+              // serve image via HTTP instead of embedding base64
+              const sjid = fileName.replace(/\.json$/, '');
+              const url = `${MEDIA_BASE_URL}/media/${sjid}/${mediaInfo.name}`;
               item.media = {
                 type: 'image',
                 mime: mediaInfo.mime || null,
                 name: mediaInfo.name || null,
-                base64: `data:${mediaInfo.mime || 'image'};base64,${base64}`,
+                url,
               };
             } else {
               const mime = mediaInfo.mime || '';
@@ -440,11 +451,25 @@ const normalizeBaileysMessage = (msg) => {
     else if (mtype === "imageMessage") text = msg.message.imageMessage?.caption || "";
     else if (mtype === "documentMessage") text = msg.message.documentMessage?.fileName || "";
     const timestamp = msg.messageTimestamp || key.timestamp || msg.timestamp || null;
-    return { id, remote, fromMe, pushName, type: mtype, text, timestamp };
+    return { id, remote, fromMe, pushName, type: mtype, text, timestamp, time: formatDate(timestamp), media: msg.media || null };
   } catch (e) {
     return null;
   }
 };
+
+const formatDate = (ts) => {
+  const d = new Date(ts * 1000);
+
+  return d.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+};
+ 
 
 const normalizeStoredMessage = (item) => {
   // item expected to be the format we saved to file
@@ -456,6 +481,8 @@ const normalizeStoredMessage = (item) => {
     type: item.type || null,
     text: item.text || "",
     timestamp: item.timestamp || null,
+    time: formatDate(timestamp),
+    media: item.media || null // 🔥 WAJIB
   };
 };
 
@@ -496,8 +523,21 @@ const attachWsClient = (ws, info = {}) => {
               const fileHist = readHistoryFromFile(jid, limit);
               const compact = !!json.compact;
               if (fileHist) {
-                const out = compact ? normalizeMessages(fileHist) : fileHist;
-                return ws.send(JSON.stringify({ type: "history", jid, messages: out, source: 'file' }));
+                        // ensure media.url exists for stored items
+                        try {
+                          for (const it of fileHist) {
+                            if (it && it.media && !it.media.url) {
+                              const sjid = jidToFilename(jid).replace(/\.json$/, '');
+                              if (it.media.name) it.media.url = `${MEDIA_BASE_URL}/media/${sjid}/${it.media.name}`;
+                              else if (it.media.path) {
+                                const name = path.basename(it.media.path || '');
+                                if (name) it.media.url = `${MEDIA_BASE_URL}/media/${sjid}/${name}`;
+                              }
+                            }
+                          }
+                        } catch (e) {}
+                        const out = compact ? normalizeMessages(fileHist) : fileHist;
+                        return ws.send(JSON.stringify({ type: "history", jid, messages: out, source: 'file' }));
               }
 
           if (!WA_READY) return ws.send(JSON.stringify({ type: "error", message: "WA offline and no local history" }));
@@ -537,6 +577,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
 
+// Public URL base for serving media files. Configure via env MEDIA_BASE_URL if needed.
+const PUBLIC_HOST = process.env.PUBLIC_HOST || (HOST === '0.0.0.0' ? process.env.MEDIA_PUBLIC_IP || '103.169.73.35' : HOST);
+const MEDIA_BASE_URL = process.env.MEDIA_BASE_URL || `http://${PUBLIC_HOST}:${PORT}`;
+
+// Serve uploaded media files under /media/:sjid/:filename
+app.get('/media/:sjid/:filename', (req, res) => {
+  try {
+    const sjid = req.params.sjid;
+    const filename = req.params.filename;
+    const dir = path.join(MEDIA_DIR, sjid);
+    const filePath = path.join(dir, filename);
+    if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+    return res.sendFile(filePath);
+  } catch (e) {
+    console.error('media serve error', e?.message || e);
+    return res.status(500).send('Server error');
+  }
+});
+
 // GET chat history
 // Accepts either `jid` (full jid like 62812...@s.whatsapp.net or group@g.us) or `number` (phone like 08123..)
 app.get('/history', async (req, res) => {
@@ -553,6 +612,21 @@ app.get('/history', async (req, res) => {
   const compact = req.query.compact === '1' || req.query.compact === 'true';
   const fileHist = readHistoryFromFile(targetJid, Number(limit) || 50);
   if (fileHist) {
+    // Ensure stored media entries have a public url (for older items that saved path instead of url)
+    try {
+      for (const it of fileHist) {
+        if (it && it.media && !it.media.url) {
+          const sjid = jidToFilename(targetJid).replace(/\.json$/, '');
+          if (it.media.name) {
+            it.media.url = `${MEDIA_BASE_URL}/media/${sjid}/${it.media.name}`;
+          } else if (it.media.path) {
+            const name = path.basename(it.media.path || '');
+            if (name) it.media.url = `${MEDIA_BASE_URL}/media/${sjid}/${name}`;
+          }
+        }
+      }
+    } catch (e) {}
+
     const out = compact ? normalizeMessages(fileHist) : fileHist;
     return res.json({ success: true, jid: targetJid, count: out.length, messages: out, source: 'file' });
   }
@@ -696,6 +770,34 @@ const startSock = async () => {
           message: msg.message || null,
         };
 
+        // If this is a media message, reserve a public URL immediately (pending)
+        try {
+          const mediaTypes = {
+            imageMessage: 'image',
+            videoMessage: 'video',
+            audioMessage: 'audio',
+            documentMessage: 'document'
+          };
+          if (["imageMessage", "videoMessage", "documentMessage", "audioMessage"].includes(mtype)) {
+            const content = msg.message?.[mtype];
+            const mimetype = content?.mimetype || null;
+            const ext = getExtFromMime(mimetype, content?.fileName || null) || "";
+            const fname = `${timestamp}_${id}${ext}`;
+            const url = getMediaUrl(remote, fname);
+            item.media = {
+              pending: true,
+              type: mediaTypes[mtype] || 'document',
+              mime: mimetype,
+              name: fname,
+              url,
+              attempts: 0,
+              lastAttempt: Date.now()
+            };
+          }
+        } catch (e) {
+          // ignore any error while computing provisional media url
+        }
+
         // Save message to JSON file
         if (remote) {
           saveMessageToFile(remote, item);
@@ -714,8 +816,14 @@ const startSock = async () => {
           timestamp,
           type: mtype,
         };
-        broadcast({ type: "whatsapp_message", payload });
-        console.log(`📤 Broadcasted message to ${wsClients.size} WS clients`);
+        // If this is a media message, skip initial broadcast and wait until file is saved
+        const isMediaMsg = ["imageMessage", "videoMessage", "documentMessage", "audioMessage"].includes(mtype);
+        if (!isMediaMsg) {
+          broadcast({ type: "whatsapp_message", payload });
+          console.log(`📤 Broadcasted message to ${wsClients.size} WS clients`);
+        } else {
+          console.log(`🟡 Media message received (id=${id}), deferring broadcast until file saved`);
+        }
 
         // Handle media if present
         if (["imageMessage", "videoMessage", "documentMessage", "audioMessage"].includes(mtype)) {
@@ -794,43 +902,43 @@ const startSock = async () => {
                     for (let i = arr.length - 1; i >= 0; i--) {
                       if (arr[i].id === id) {
                         if (mtype === "imageMessage" && [".jpg", ".jpeg", ".png", ".gif"].some(ext => filename.endsWith(ext))) {
-                          // For images, embed as base64
-                          const base64 = buffer.toString('base64');
+                          // For images: provide a public URL instead of embedding base64
+                          const sjid = jidToFilename(remote).replace(/\.json$/, '');
+                          const url = `${MEDIA_BASE_URL}/media/${sjid}/${filename}`;
                           arr[i].media = {
                             type: 'image',
                             mime: mimetype,
                             name: filename,
-                            base64: `data:${mimetype};base64,${base64}`,
+                            url,
                           };
-                          // Also broadcast with base64
-                          broadcast({ 
-                            type: 'media_saved', 
-                            payload: { 
-                              chat: remote, 
-                              id, 
-                              media: arr[i].media,
-                              sender: senderNumber
-                            } 
-                          });
                         } else {
-                          // For other media, store metadata and path
+                          // For other media, store metadata and also provide a public URL
                           const mediaType = typeMap[mtype] || 'document';
+                          const sjid = jidToFilename(remote).replace(/\.json$/, '');
+                          const url = `${MEDIA_BASE_URL}/media/${sjid}/${filename}`;
                           arr[i].media = {
                             type: mediaType,
                             mime: mimetype,
                             name: filename,
                             path: filePath,
+                            url,
                           };
-                          broadcast({ 
-                            type: 'media_saved', 
-                            payload: { 
-                              chat: remote, 
-                              id, 
-                              media: arr[i].media,
-                              sender: senderNumber
-                            } 
-                          });
                         }
+                        // After attaching media info to saved message, broadcast a single whatsapp_message
+                        const outPayload = {
+                          id,
+                          text,
+                          chat: remote,
+                          sender: senderNumber,
+                          senderName: pushName,
+                          isGroup,
+                          groupId: isGroup ? remote : null,
+                          groupName: groupName || null,
+                          timestamp,
+                          type: mtype,
+                          media: arr[i].media,
+                        };
+                        broadcast({ type: 'whatsapp_message', payload: outPayload });
                         break;
                       }
                     }
