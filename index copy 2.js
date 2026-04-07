@@ -12,8 +12,6 @@ import http from "http";
 import { WebSocketServer } from "ws";
 import fileUpload from "express-fileupload";
 import Queue from "p-queue";
-import axios from "axios";
-import crypto from "crypto";
 
 const app = express();
 
@@ -147,46 +145,6 @@ const getExtFromMime = (mimetype, fileName) => {
   return "";
 };
 
-const downloadMediaRaw = async (msg, jid, mtype, id) => {
-  try {
-    const content = msg.message?.[mtype];
-
-    if (!content?.directPath) {
-      console.log("❌ tidak ada directPath");
-      return null;
-    }
-
-    const url = `https://mmg.whatsapp.net${content.directPath}`;
-
-    const dir = ensureMediaDir(jid);
-    const filename = `${Date.now()}_${id}.enc`;
-    const filePath = path.join(dir, filename);
-
-    const res = await axios.get(url, {
-      responseType: "arraybuffer",
-      headers: {
-        Origin: "https://web.whatsapp.com",
-        Referer: "https://web.whatsapp.com/",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-      }
-    });
-
-    fs.writeFileSync(filePath, res.data);
-
-    console.log("✅ RAW media saved (directPath):", filePath);
-
-    return {
-      path: filePath,
-      encrypted: true
-    };
-
-  } catch (e) {
-    console.error("downloadMediaRaw error:", e?.message || e);
-    return null;
-  }
-};
-
 const downloadMediaSafe = async (msg, mtype) => {
   try {
     const mod = await import("@whiskeysockets/baileys").catch(() => ({}));
@@ -291,41 +249,6 @@ const downloadMediaToFile = async (msg, jid, mtype, id) => {
   }
 };
 
-const hkdf = (key, length, info) => {
-  return crypto.hkdfSync("sha256", key, Buffer.alloc(0), Buffer.from(info), length);
-};
-
-const decryptMediaFile = (encBuffer, mediaKey, type = "image") => {
-  try {
-    const infoMap = {
-      image: "WhatsApp Image Keys",
-      video: "WhatsApp Video Keys",
-      audio: "WhatsApp Audio Keys",
-      document: "WhatsApp Document Keys",
-    };
-
-    const info = infoMap[type] || "WhatsApp Image Keys";
-
-    // derive key
-    const expandedKey = hkdf(mediaKey, 112, info);
-
-    const iv = expandedKey.slice(0, 16);
-    const cipherKey = expandedKey.slice(16, 48);
-
-    const decipher = crypto.createDecipheriv("aes-256-cbc", cipherKey, iv);
-
-    const decrypted = Buffer.concat([
-      decipher.update(encBuffer),
-      decipher.final(),
-    ]);
-
-    return decrypted;
-
-  } catch (e) {
-    console.error("❌ decrypt gagal:", e.message);
-    return null;
-  }
-};
 // ---------------------
 // Media re-processing (retry pending downloads)
 // ---------------------
@@ -737,47 +660,12 @@ const startSock = async () => {
                 }
               };
 
-              let mediaInfo = await downloadMediaToFile(
+              const mediaInfo = await downloadMediaToFile(
                 msgForDownload,
                 target,
                 mtype,
                 parsed.id
               );
-
-              if (!mediaInfo) {
-                console.log("⚠️ fallback ke raw download");
-
-                mediaInfo = await downloadMediaRaw(msg, target, mtype, parsed.id);
-                if (mediaInfo) {
-                    const content = msg.message?.[mtype];
-
-                    const typeMap = {
-                      imageMessage: "image",
-                      videoMessage: "video",
-                      audioMessage: "audio",
-                      documentMessage: "document"
-                    };
-
-                    const mediaType = typeMap[mtype] || "image";
-
-                    const encBuffer = fs.readFileSync(mediaInfo.path);
-
-                    const decrypted = decryptMediaFile(
-                      encBuffer,
-                      content.mediaKey,
-                      mediaType
-                    );
-
-                    if (decrypted) {
-                      const ext = getExtFromMime(content.mimetype);
-                      const finalPath = raw.path.replace(".enc", ext || ".bin");
-
-                      fs.writeFileSync(finalPath, decrypted);
-
-                      console.log("✅ DECRYPT SUCCESS:", finalPath);
-                    }
-                  }
-              }
               if (mediaInfo) {
                 // update saved file: find message by id and attach media
                 try {
