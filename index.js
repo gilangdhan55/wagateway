@@ -15,6 +15,8 @@ import Queue from "p-queue";
 import axios from "axios";
 import crypto from "crypto";
 import { downloadContentFromMessage } from "@whiskeysockets/baileys";
+import sharp from "sharp";
+
 
 const app = express();
 
@@ -436,6 +438,253 @@ setInterval(() => {
   reprocessPendingMediaOnce().catch((e) => console.error('reprocess interval error', e));
 }, MEDIA_RETRY_INTERVAL);
 
+const formatTanggalIndo = (dateStr) => {
+  const d = new Date(dateStr);
+
+  return d.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+ 
+
+const generateCaption = ({ nama, rute, tanggal, alamat }) => {
+  return `${nama}
+
+Rute: ${rute}
+
+${formatTanggalIndo(tanggal)}
+
+${alamat}`;
+};
+
+function wrapTextByWidth(text, maxWidth, fontSize) {
+  const avgCharWidth = fontSize * 0.6; // estimasi
+  const maxChars = Math.floor(maxWidth / avgCharWidth);
+
+  const words = text.split(" ");
+  let lines = [];
+  let current = "";
+
+  for (let word of words) {
+    if ((current + word).length > maxChars) {
+      lines.push(current.trim());
+      current = "";
+    }
+    current += word + " ";
+  }
+
+  if (current) lines.push(current.trim());
+
+  return lines;
+}
+
+const formatTanggalJam = (datetime) => {
+  const d = new Date(datetime);
+
+  return {
+    tanggal: d.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    jam: d.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+};
+
+ async function addWatermarkToImage(inputPath, outputPath, data) {
+  const { unit, nama, rute, tanggal, alamat } = data;
+
+  // ===== LOAD + FIX ORIENTATION =====
+  const image = sharp(inputPath).rotate().ensureAlpha();
+  const { width: W, height: H } = await image.metadata();
+
+  const padding = Math.floor(W * 0.04);
+
+  // ===== DETECT ORIENTATION =====
+  const isLandscape = W > H;
+
+  // ===== FONT =====
+  let fontUnit = Math.min(Math.floor(W * 0.075), 80);
+  let fontTitle = Math.floor(W * 0.055);
+  let fontNormal = Math.floor(W * 0.032);
+  let fontSmall = Math.floor(W * 0.028);
+  let fontTime = Math.floor(W * 0.04);
+  const lineGap = Math.floor(W * 0.015);
+
+  // 👉 kecilin dikit kalau landscape
+  if (isLandscape) {
+    fontUnit *= 0.85;
+    fontTitle *= 0.9;
+  }
+
+  // ===== FORMAT DATE =====
+  const d = new Date(tanggal);
+  const jam = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  const tgl = d.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  // ===== WRAP TEXT =====
+  function wrap(text, max = isLandscape ? 35 : 50) {
+    const words = text.split(" ");
+    let lines = [];
+    let line = "";
+
+    words.forEach(w => {
+      if ((line + w).length > max) {
+        lines.push(line);
+        line = w + " ";
+      } else {
+        line += w + " ";
+      }
+    });
+
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  const alamatLines = wrap(alamat);
+
+  // ===== HITUNG BOX HEIGHT =====
+  let tempY = 0;
+  tempY += fontUnit;
+  tempY += fontTitle;
+  tempY += fontNormal;
+  tempY += fontNormal;
+  tempY += alamatLines.length * (fontSmall + lineGap);
+
+  const boxHeight = tempY + 80;
+
+  // ===== LIMIT KHUSUS LANDSCAPE =====
+  let finalBoxHeight = boxHeight;
+  let visibleAlamat = alamatLines;
+
+  if (isLandscape) {
+    const maxBoxHeight = Math.floor(H * 0.45);
+
+    if (boxHeight > maxBoxHeight) {
+      finalBoxHeight = maxBoxHeight;
+
+      // potong alamat biar muat
+      visibleAlamat = alamatLines.slice(0, 2);
+      if (alamatLines.length > 2) {
+        visibleAlamat[visibleAlamat.length - 1] += '...';
+      }
+    }
+  } 
+
+  // ===== POSISI BAWAH =====
+  const marginBottom = 40;
+  const boxY = H - finalBoxHeight - 30;
+
+  // ===== WIDTH (beda portrait vs landscape) =====
+  console.log(`lanscape: ${isLandscape}`)
+  const boxWidth = isLandscape
+  ? W - padding * 2 - 40
+  : W - padding * 2;
+
+  const boxX = padding;
+
+  // ===== CONTENT =====
+  let currentY = boxY + 50;
+  let elements = "";
+
+  elements += `<text x="${boxX + 25}" y="${currentY}" font-size="${fontUnit}" fill="white" font-weight="900">${unit}</text>`;
+  currentY += fontUnit;
+
+  elements += `<text x="${boxX + 25}" y="${currentY}" font-size="${fontTitle}" fill="white" font-weight="bold">${nama}</text>`;
+  currentY += fontTitle + lineGap;
+
+  elements += `<text x="${boxX + 25}" y="${currentY}" font-size="${fontNormal}" fill="#FFA500">
+    Rute ${rute} | Unit ${unit}
+  </text>`;
+  currentY += fontNormal + lineGap;
+
+  elements += `
+    <rect x="${boxX + 25}" y="${currentY - 14}" width="18" height="18" rx="3" fill="white"/>
+    <rect x="${boxX + 25}" y="${currentY - 14}" width="18" height="5" rx="2" fill="#FF6B6B"/>
+    <text x="${boxX + 50}" y="${currentY}" font-size="${fontNormal}" fill="white">${tgl}</text>
+  `;
+  currentY += fontNormal + lineGap;
+
+  visibleAlamat.forEach((line, i) => {
+    if (i === 0) {
+      elements += `
+        <circle cx="${boxX + 34}" cy="${currentY - 6}" r="8" fill="#FF6B6B"/>
+        <circle cx="${boxX + 34}" cy="${currentY - 8}" r="3" fill="white"/>
+      `;
+    }
+
+    elements += `<text x="${boxX + 50}" y="${currentY}" font-size="${fontSmall}" fill="white">
+      ${escapeXml(line)}
+    </text>`;
+
+    currentY += fontSmall + lineGap;
+  });
+
+  // ===== TIME BADGE =====
+  const timeX = boxX + 10;
+  const timeY = boxY - 25;
+
+  const svg = `
+  <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+
+    <rect 
+      x="${boxX}" 
+      y="${boxY}" 
+      rx="16"
+      width="${boxWidth}" 
+      height="${finalBoxHeight}"
+      fill="black" fill-opacity="0.5"/>
+
+    <rect 
+      x="${boxX + 8}" 
+      y="${boxY + 50}" 
+      width="4" 
+      height="${boxHeight - 70}" 
+      fill="#FF6A00"
+      rx="2"/>
+
+    <rect x="${timeX}" y="${timeY}" rx="8"
+      width="90" height="34"
+      fill="black" fill-opacity="0.8"/>
+
+    <text x="${timeX + 12}" y="${timeY + 23}"
+      font-size="${fontTime}" fill="white" font-weight="bold">
+      ${jam}
+    </text>
+
+    ${elements}
+  </svg>
+  `;
+
+  // ===== COMPOSITE (ANTI ERROR) =====
+  await image
+    .composite([
+      {
+        input: Buffer.from(svg),
+        top: 0,
+        left: 0
+      }
+    ])
+    .toFile(outputPath);
+}
+
+// ===== ESCAPE XML =====
+function escapeXml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // normalize messages to a compact shape for easier consumption
 const normalizeBaileysMessage = (msg) => {
   try {
@@ -590,6 +839,29 @@ app.get('/media/:sjid/:filename', (req, res) => {
     const filePath = path.join(dir, filename);
     if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
     return res.sendFile(filePath);
+  } catch (e) {
+    console.error('media serve error', e?.message || e);
+    return res.status(500).send('Server error');
+  }
+});
+
+app.get('/output/:sjid/:filename', (req, res) => {
+  try {
+    const sjid = decodeURIComponent(req.params.sjid);
+    const filename = req.params.filename;
+    
+    const dir = path.join(process.cwd(), "media");
+    const filePath = path.join(dir, sjid, filename);
+
+    console.log("REQUEST:", sjid, filename);
+    console.log("FILEPATH:", filePath);
+
+    if (!fs.existsSync(filePath)) {
+      console.log("❌ FILE TIDAK ADA");
+      return res.status(404).send('Not found');
+    }
+
+    return res.sendFile(filePath); // sekarang aman karena absolute path
   } catch (e) {
     console.error('media serve error', e?.message || e);
     return res.status(500).send('Server error');
@@ -1157,6 +1429,120 @@ app.get("/groups", async (req, res) => {
       success: true,
       count: result.length,
       data: result,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+
+app.post("/send-driver-image", async (req, res) => {
+  const { number, nama, rute, tanggal, alamat } = req.body;
+  const file = req.files?.image;
+
+  if (!file) {
+    return res.status(400).json({ success: false, message: "Image wajib" });
+  }
+
+  if (!number) {
+    return res.status(400).json({ success: false, message: "Nomor wajib" });
+  }
+
+  if (!WA_READY) {
+    return res.status(503).json({ success: false, message: "WA belum ready" });
+  }
+
+  const jid = number.startsWith("62")
+    ? `${number}@s.whatsapp.net`
+    : `62${number.substring(1)}@s.whatsapp.net`;
+
+  const caption = generateCaption({ nama, rute, tanggal, alamat });
+
+  try {
+    const dir = "./uploads";
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
+    const filePath = path.join(dir, `${Date.now()}_${file.name}`);
+    await file.mv(filePath);
+
+    await sock.sendMessage(jid, {
+      image: { url: filePath },
+      caption,
+    });
+
+    fs.unlinkSync(filePath);
+
+    res.json({
+      success: true,
+      message: "Berhasil kirim gambar + caption",
+      caption,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+app.post("/send-driver-group-image", async (req, res) => {
+  try {
+    const { id_groups, nama, rute, tanggal, alamat, unit } = req.body;
+    const file = req.files?.image;
+
+    if (!file) return res.status(400).json({ message: "Image wajib" });
+    if (!id_groups) return res.status(400).json({ message: "ID grup wajib" });
+
+    if (!WA_READY) {
+      return res.status(503).json({ message: "WA belum ready" });
+    }
+
+    const groupJid = id_groups.endsWith("@g.us")
+      ? id_groups
+      : `${id_groups}@g.us`;
+
+    // simpan file asli
+    const dir = path.join("./media", id_groups);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const ext = path.extname(file.name); // .jpg
+    const base = path.basename(file.name, ext);
+
+    const nameFile = `wm_${Date.now()}_${base}${ext}`;
+    const inputPath = path.join(dir, `raw_${Date.now()}_${file.name}`);
+    const outputPath = path.join(dir, nameFile);
+
+    await file.mv(inputPath);
+
+    // 🔥 tambahin watermark ke gambar
+    await addWatermarkToImage(inputPath, outputPath, {
+      nama,
+      rute,
+      tanggal,
+      alamat,
+      unit
+    });
+
+    // kirim TANPA caption
+    await sock.sendMessage(groupJid, {
+      image: { url: outputPath },
+    });
+
+    // cleanup 
+    // fs.unlinkSync(outputPath);
+    fs.unlinkSync(inputPath);
+
+    const protocol = req.protocol;
+    const host = req.get("host");
+
+    const fileUrl = `${protocol}://${host}/output/${id_groups}/${nameFile}`;
+
+    res.json({
+      success: true,
+      message: "Berhasil kirim gambar + watermark ke grup",
+      url: fileUrl,
     });
   } catch (err) {
     res.status(500).json({
