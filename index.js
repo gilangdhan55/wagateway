@@ -16,6 +16,7 @@ import axios from "axios";
 import crypto from "crypto";
 import { downloadContentFromMessage } from "@whiskeysockets/baileys";
 import sharp from "sharp";
+import { fonts } from "./fonts.js";
 
 
 const app = express();
@@ -161,46 +162,7 @@ const getExtFromMime = (mimetype, fileName) => {
   return "";
 };
 
-const downloadMediaRaw = async (msg, jid, mtype, id) => {
-  try {
-    const content = msg.message?.[mtype];
-
-    if (!content?.directPath) {
-      console.log("❌ tidak ada directPath");
-      return null;
-    }
-
-    const url = `https://mmg.whatsapp.net${content.directPath}`;
-
-    const dir = ensureMediaDir(jid);
-    const filename = `${Date.now()}_${id}.enc`;
-    const filePath = path.join(dir, filename);
-
-    const res = await axios.get(url, {
-      responseType: "arraybuffer",
-      headers: {
-        Origin: "https://web.whatsapp.com",
-        Referer: "https://web.whatsapp.com/",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-      }
-    });
-
-    fs.writeFileSync(filePath, res.data);
-
-    console.log("✅ RAW media saved (directPath):", filePath);
-
-    return {
-      path: filePath,
-      encrypted: true
-    };
-
-  } catch (e) {
-    console.error("downloadMediaRaw error:", e?.message || e);
-    return null;
-  }
-};
-
+  
 const downloadMediaSafe = async (msg, mtype) => {
   try {
     const mod = await import("@whiskeysockets/baileys").catch(() => ({}));
@@ -458,71 +420,39 @@ ${formatTanggalIndo(tanggal)}
 
 ${alamat}`;
 };
-
-function wrapTextByWidth(text, maxWidth, fontSize) {
-  const avgCharWidth = fontSize * 0.6; // estimasi
-  const maxChars = Math.floor(maxWidth / avgCharWidth);
-
-  const words = text.split(" ");
-  let lines = [];
-  let current = "";
-
-  for (let word of words) {
-    if ((current + word).length > maxChars) {
-      lines.push(current.trim());
-      current = "";
-    }
-    current += word + " ";
-  }
-
-  if (current) lines.push(current.trim());
-
-  return lines;
+ 
+function capitalizeWords(str) {
+  if (!str) return "";
+  
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
+ 
 
-const formatTanggalJam = (datetime) => {
-  const d = new Date(datetime);
-
-  return {
-    tanggal: d.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }),
-    jam: d.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  };
-};
-
- async function addWatermarkToImage(inputPath, outputPath, data) {
+async function addWatermarkToImage(inputPath, outputPath, data) {
   const { unit, nama, rute, tanggal, alamat } = data;
 
-  // ===== LOAD + FIX ORIENTATION =====
   const image = sharp(inputPath).rotate().ensureAlpha();
   const { width: W, height: H } = await image.metadata();
 
-  const padding = Math.floor(W * 0.04);
-
-  // ===== DETECT ORIENTATION =====
+  const padding = Math.floor(W * 0.06);
   const isLandscape = W > H;
 
-  // ===== FONT =====
-  let fontUnit = Math.min(Math.floor(W * 0.075), 80);
-  let fontTitle = Math.floor(W * 0.055);
-  let fontNormal = Math.floor(W * 0.032);
-  let fontSmall = Math.floor(W * 0.028);
-  let fontTime = Math.floor(W * 0.04);
-  const lineGap = Math.floor(W * 0.015);
+  // ===== FONT (ADAPTIVE) =====
+  const base = Math.min(W, H);
 
-  // 👉 kecilin dikit kalau landscape
-  if (isLandscape) {
-    fontUnit *= 0.85;
-    fontTitle *= 0.9;
-  }
+  let fontTitle = Math.floor(base * (isLandscape ? 0.05 : 0.055));
+  let fontNormal = Math.floor(base * (isLandscape ? 0.028 : 0.032));
+  let fontSmall = Math.floor(base * (isLandscape ? 0.024 : 0.028));
+  let fontVerySmall = Math.floor(base * (isLandscape ? 0.022 : 0.026));
+  let fontTime = Math.floor(base * (isLandscape ? 0.05 : 0.055));
 
-  // ===== FORMAT DATE =====
+  const lineGap = Math.floor(fontNormal * 0.6);
+
+  // ===== DATE =====
   const d = new Date(tanggal);
   const jam = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   const tgl = d.toLocaleDateString("id-ID", {
@@ -531,90 +461,119 @@ const formatTanggalJam = (datetime) => {
     year: "numeric",
   });
 
+  // ===== WIDTH =====
+  const boxWidth = isLandscape
+    ? W - padding * 2 - 30
+    : W - padding * 2;
+
+  const contentWidth = boxWidth - 80;
+
   // ===== WRAP TEXT =====
-  function wrap(text, max = isLandscape ? 35 : 50) {
+  function wrapText(text, maxWidth, fontSize) {
     const words = text.split(" ");
-    let lines = [];
+    const lines = [];
     let line = "";
 
-    words.forEach(w => {
-      if ((line + w).length > max) {
-        lines.push(line);
-        line = w + " ";
+    const charWidth = fontSize * 0.55;
+    const getWidth = (str) => str.length * charWidth;
+
+    words.forEach((word) => {
+      const testLine = line + word + " ";
+      if (getWidth(testLine) > maxWidth) {
+        if (line) lines.push(line.trim());
+        line = word + " ";
       } else {
-        line += w + " ";
+        line = testLine;
       }
     });
 
-    if (line) lines.push(line);
+    if (line) lines.push(line.trim());
     return lines;
   }
 
-  const alamatLines = wrap(alamat);
+  const ruteLines = wrapText(`Rute ${rute} | Unit ${unit}`, contentWidth, fontVerySmall);
+  const alamatLines = wrapText(alamat, contentWidth, fontVerySmall);
 
-  // ===== HITUNG BOX HEIGHT =====
+  // ===== HITUNG HEIGHT DINAMIS =====
   let tempY = 0;
-  tempY += fontUnit;
-  tempY += fontTitle;
-  tempY += fontNormal;
-  tempY += fontNormal;
-  tempY += alamatLines.length * (fontSmall + lineGap);
 
-  const boxHeight = tempY + 80;
+  tempY += fontTitle + 6;
+  tempY += ruteLines.length * (fontVerySmall + lineGap * 0.4);
+  tempY += fontNormal + lineGap;
+  tempY += fontNormal + lineGap;
+  tempY += alamatLines.length * (fontVerySmall + lineGap * 0.35);
 
-  // ===== LIMIT KHUSUS LANDSCAPE =====
-  let finalBoxHeight = boxHeight;
-  let visibleAlamat = alamatLines;
+  const paddingTop = 30;
+  const paddingBottom = 20;
 
-  if (isLandscape) {
-    const maxBoxHeight = Math.floor(H * 0.45);
+  const finalBoxHeight = Math.min(
+    tempY + paddingTop + paddingBottom,
+    Math.floor(H * 0.7)
+  );
 
-    if (boxHeight > maxBoxHeight) {
-      finalBoxHeight = maxBoxHeight;
-
-      // potong alamat biar muat
-      visibleAlamat = alamatLines.slice(0, 2);
-      if (alamatLines.length > 2) {
-        visibleAlamat[visibleAlamat.length - 1] += '...';
-      }
-    }
-  } 
-
-  // ===== POSISI BAWAH =====
-  const marginBottom = 40;
+  // ===== POSITION =====
+  const boxX = padding;
   const boxY = H - finalBoxHeight - 30;
 
-  // ===== WIDTH (beda portrait vs landscape) =====
-  console.log(`lanscape: ${isLandscape}`)
-  const boxWidth = isLandscape
-  ? W - padding * 2 - 40
-  : W - padding * 2;
-
-  const boxX = padding;
-
   // ===== CONTENT =====
-  let currentY = boxY + 50;
+  let currentY = boxY + paddingTop +20;
   let elements = "";
 
-  elements += `<text x="${boxX + 25}" y="${currentY}" font-size="${fontUnit}" fill="white" font-weight="900">${unit}</text>`;
-  currentY += fontUnit;
-
-  elements += `<text x="${boxX + 25}" y="${currentY}" font-size="${fontTitle}" fill="white" font-weight="bold">${nama}</text>`;
-  currentY += fontTitle + lineGap;
-
-  elements += `<text x="${boxX + 25}" y="${currentY}" font-size="${fontNormal}" fill="#FFA500">
-    Rute ${rute} | Unit ${unit}
-  </text>`;
-  currentY += fontNormal + lineGap;
-
+  // ===== NAMA =====
   elements += `
-    <rect x="${boxX + 25}" y="${currentY - 14}" width="18" height="18" rx="3" fill="white"/>
-    <rect x="${boxX + 25}" y="${currentY - 14}" width="18" height="5" rx="2" fill="#FF6B6B"/>
-    <text x="${boxX + 50}" y="${currentY}" font-size="${fontNormal}" fill="white">${tgl}</text>
+    <text x="${boxX + 25}" y="${currentY}"
+      font-size="${fontTitle}" fill="white"
+      font-weight="bold"
+      font-family="GTWalsheim">
+      ${nama}
+    </text>
+  `;
+  currentY += fontTitle + 4;
+
+  // ===== RUTE (AUTO WRAP) =====
+  ruteLines.forEach(line => {
+    elements += `
+      <text x="${boxX + 25}" y="${currentY}"
+        font-size="${fontVerySmall}"
+        fill="#FFA500"
+        font-family="GTWalsheim">
+        ${line}
+      </text>
+    `;
+    currentY += fontVerySmall + lineGap * 0.4;
+  });
+
+  // ===== UNIT =====
+  elements += `
+    <circle cx="${boxX + 33}" cy="${currentY - 6}" r="7" fill="#4FC3F7"/>
+    <circle cx="${boxX + 33}" cy="${currentY - 6}" r="3" fill="white"/>
+
+    <text x="${boxX + 50}" y="${currentY}"
+      font-size="${fontNormal}"
+      fill="white"
+      font-weight="bold"
+      font-family="GTWalsheimCondensed">
+      ${unit}
+    </text>
   `;
   currentY += fontNormal + lineGap;
 
-  visibleAlamat.forEach((line, i) => {
+  // ===== TANGGAL =====
+  elements += `
+    <rect x="${boxX + 25}" y="${currentY - 14}" width="18" height="18" rx="3" fill="white"/>
+    <rect x="${boxX + 25}" y="${currentY - 14}" width="18" height="5" rx="2" fill="#FF6B6B"/>
+
+    <text x="${boxX + 50}" y="${currentY}"
+      font-size="${fontNormal}"
+      fill="white"
+      font-family="GTWalsheim">
+      ${tgl}
+    </text>
+  `;
+  currentY += fontNormal + lineGap;
+
+  // ===== ALAMAT =====
+  alamatLines.forEach((line, i) => {
     if (i === 0) {
       elements += `
         <circle cx="${boxX + 34}" cy="${currentY - 6}" r="8" fill="#FF6B6B"/>
@@ -622,42 +581,66 @@ const formatTanggalJam = (datetime) => {
       `;
     }
 
-    elements += `<text x="${boxX + 50}" y="${currentY}" font-size="${fontSmall}" fill="white">
-      ${escapeXml(line)}
-    </text>`;
+    elements += `
+      <text x="${boxX + 50}" y="${currentY}"
+        font-size="${fontVerySmall}"
+        fill="white"
+        font-family="GTWalsheim">
+        ${escapeXml(line)}
+      </text>
+    `;
 
-    currentY += fontSmall + lineGap;
+    currentY += fontVerySmall + lineGap * 0.35;
   });
 
-  // ===== TIME BADGE =====
-  const timeX = boxX + 10;
-  const timeY = boxY - 25;
+  // ===== TIME (FIX SIZE & CENTER) =====
+  const timeHeight = fontTime + 18;
+  const timeWidth = jam.length * (fontTime * 0.6) + 30;
 
+  const timeX = boxX + 12;
+  const timeY = boxY - timeHeight - 6;
+
+  // ===== LINE MERAH =====
+  const lineWidth = 8;
+  const lineX = boxX - lineWidth - 6;
+  const lineTop = timeY;
+  const lineHeight = (boxY + finalBoxHeight) - lineTop;
+
+  // ===== SVG =====
   const svg = `
   <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
 
-    <rect 
-      x="${boxX}" 
-      y="${boxY}" 
+    <!-- BOX -->
+    <rect x="${boxX}" y="${boxY}"
       rx="16"
-      width="${boxWidth}" 
+      width="${boxWidth}"
       height="${finalBoxHeight}"
       fill="black" fill-opacity="0.5"/>
 
-    <rect 
-      x="${boxX + 8}" 
-      y="${boxY + 50}" 
-      width="4" 
-      height="${boxHeight - 70}" 
-      fill="#FF6A00"
-      rx="2"/>
+    <!-- LINE -->
+    <rect x="${lineX}" y="${lineTop}"
+      width="${lineWidth}"
+      height="${lineHeight}"
+      fill="#FF3B30"
+      rx="4"/>
 
-    <rect x="${timeX}" y="${timeY}" rx="8"
-      width="90" height="34"
-      fill="black" fill-opacity="0.8"/>
+    <!-- TIME BOX -->
+    <rect x="${timeX}" y="${timeY}"
+      rx="10"
+      width="${timeWidth}"
+      height="${timeHeight}"
+      fill="black" fill-opacity="0.9"/>
 
-    <text x="${timeX + 12}" y="${timeY + 23}"
-      font-size="${fontTime}" fill="white" font-weight="bold">
+    <!-- TIME TEXT -->
+    <text
+      x="${timeX + timeWidth / 2}"
+      y="${timeY + timeHeight / 2}"
+      font-size="${fontTime}"
+      fill="white"
+      font-weight="bold"
+      font-family="GTWalsheim"
+      text-anchor="middle"
+      dominant-baseline="middle">
       ${jam}
     </text>
 
@@ -665,15 +648,8 @@ const formatTanggalJam = (datetime) => {
   </svg>
   `;
 
-  // ===== COMPOSITE (ANTI ERROR) =====
   await image
-    .composite([
-      {
-        input: Buffer.from(svg),
-        top: 0,
-        left: 0
-      }
-    ])
+    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
     .toFile(outputPath);
 }
 
@@ -1518,7 +1494,7 @@ app.post("/send-driver-group-image", async (req, res) => {
 
     // 🔥 tambahin watermark ke gambar
     await addWatermarkToImage(inputPath, outputPath, {
-      nama,
+      nama: capitalizeWords(nama),
       rute,
       tanggal,
       alamat,
