@@ -59,6 +59,7 @@ sessions/
 auth/
 
 messages/
+messages/*.json
 
 media/
 
